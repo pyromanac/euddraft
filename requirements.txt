@@ -9,3 +9,6 @@ cx_Freeze
 
 # These can be installed via pip
 eudplib
+
+idna
+cffi

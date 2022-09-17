@@ -7,7 +7,6 @@ from euddraft import version
 if "build_exe" not in sys.argv:
     sys.argv.append("build_exe")
 
-
 build_exe_options = {
     "packages": [
         "os",
@@ -18,9 +17,13 @@ build_exe_options = {
         "importlib",
         "json",
         "eudplib",
+        "numpy",
     ],
     "excludes": ["tkinter"],
     "optimize": 2,
+    "includes": [
+        'numpy.core._methods', 'numpy.lib.format'
+    ],
     "include_msvcr": True,
     "include_files": [
         "freezeMpq.pyd",

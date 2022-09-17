@@ -125,7 +125,7 @@ def loadPluginsFromConfig(ep, config):
                 base64.b64decode(scbank_key)
             except binascii.Error:
                 raise Exception("SCBank key must be base64 encoded")
-            from scbank_core import init_settings
+            #from scbank_core import init_settings
 
             msqc_scbank = init_settings(SCBankSettings)
             msqc_settings.update(msqc_scbank)
