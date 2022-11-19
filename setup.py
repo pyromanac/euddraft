@@ -24,6 +24,7 @@ build_exe_options = {
     "includes": [
         'numpy.core._methods', 'numpy.lib.format'
     ],
+    "build_exe": "..\\euddraft\\build\\euddraft-pyro",
     "include_msvcr": True,
     "include_files": [
         "freezeMpq.pyd",
