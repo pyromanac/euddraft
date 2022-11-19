@@ -1,5 +1,138 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.3] - 2022.11.03
+### 변경사항
+- `EPDOffsetMap`이 *(이름, 오프셋, 타입)* 쌍의 튜플을 받도록 롤백
+- `EPDOffsetMap`의 타입 종류 추가 및 변경
+  * 현재 사용 가능한 타입: bool, 1, 2, 4, "CUnit", "CSprite", "Position", "PositionX", "PositionY", `Flingy`, `TrgPlayer`, `TrgUnit`, `UnitOrder`, `Upgrade`, `Tech`
+
+### 기능 개선
+- eudplib 0.71.7, cx-freeze 6.13.1, pybind11 업데이트
+- epScript `object`(=`EUDStruct`)의 제자리 연산과 비교 연산 최적화
+- `EPDCUnitMap`의 수정/비교 성능 최적화
+- `f_bitlshift(a, b)`가 a, b 둘 다 상수면 컴파일 시간에 `a << b`를 계산하도록 수정
+
+### 버그 수정
+- [epScript] armoha/euddraft#73 : 파이썬 컬렉션 내 변수를 수정하면 새 변수가 덮어쓰는 버그 수정
+- `dwread(상수객체)`가 컴파일 시간에 *EPD*를 계산하도록 수정 (Cocoa님 제보)
+- `EUDDeque.append(value)`에서 꼬리가 왼쪽으로 돌아올 때 버그 수정
+- 일부 `Image` 이름 뒤에 공백 문자 오타 수정
+- `UnitGroup`의 `.dying` 블럭 조건에 *hp < 0.5* 대신 *hp == 0*으로 수정
+- 일부 최적화가 적용되지 않는 버그 수정 (@Chromowolf 님 제보)
+
+### 기능 추가
+- `matplotlib` 라이브러리 추가
+- `EUDQueue.clear()`, `EUDDeque.clear()` 추가
+- `f_wadd_epd(epd, subp, value)`, `f_wsubtract_epd(epd, subp, value)`, `f_badd_epd(epd, subp, value)`, `f_bsubtract_epd(epd, subp, value)` 추가
+  * `f_wadd_epd`와 `f_wsubtract_epd`의 *subp*에는 0, 1, 2만 사용 가능합니다.
+- 타입 추가: `Weapon`, `Flingy`, `Sprite`, `Upgrade`, `Tech`, `UnitOrder`, `Icon`, `Portrait`
+- 함수 추가: `EncodeWeapon`, `EncodeFlingy`, `EncodeSprite`, `EncodeUpgrade`, `EncodeTech`, `EncodeUnitOrder`, `EncodeIcon`, `EncodePortrait`
+- 로케이션 함수에 *action* 키워드 인자 추가: `f_(set/add/dilate)loc(loc, x, y, action=true)`
+
+## [0.9.8.2] - 2022.10.24
+- eudplib 0.71.2 업데이트
+- `pow(a, b)` 거듭제곱 함수에서 b가 2의 제곱수 일 때 항상 1을 리턴하는 버그 수정 (@Chromowolf 님 기여)
+- [epScript] 전역변수에 `%` 연산자 썼을 때 오류 수정 (@Chromowolf 님 제보)
+- [epScript] armoha/euddraft#56 수정 : 다른 모듈의 변수를 `=`로 대입했을 때 버그 수정
+  * 더 이상 `SetVariables`로 우회하지 않아도 됩니다.
+
+## [0.9.8.1] - 2022.10.21
+- eudplib 0.71.1 업데이트
+- 연결맵의 무한반복 트리거가 고장나는 버그 수정
+- `import numpy` 시 컴파일 오류 수정 (PyroManiac님 제보)
+- `EUDDeque(크기)()` 기능 추가\
+  데크는 데이터를 왼쪽/오른쪽 양쪽으로 추가하고 꺼낼 수 있는 자료구조입니다.\
+  데크가 가득 차면 새 항목이 추가될 때 해당하는 수의 항목이 반대쪽 끝에서 삭제됩니다.
+  * `.length` : 현재 개수
+  * `.append(값)` : 데크의 오른쪽에 값을 추가합니다.
+  * `.pop()` : 데크의 오른쪽에서 값을 꺼냅니다.
+  * `.appendleft(값)` : 데크의 왼쪽에 값을 추가합니다.
+  * `.popleft()` : 데크의 왼쪽에서 값을 꺼냅니다.
+  * `.empty()` : 데크가 비어있으면 참인 조건
+  * `foreach` 반복문도 지원합니다.\
+    왼쪽에서 오른쪽으로 순회합니다.
+    ```js
+    // dq3은 크기가 3인 데크
+    const dq3 = EUDDeque(3)();
+    const ret = EUDCreateVariables(6);
+  
+    // 빈 데크를 순회하면 아무 일도 안 일어납니다
+    foreach(v : dq3) { ret[0] += v; }
+  
+    // 1과 2를 오른쪽에 추가
+    dq3.append(1);  // dq3 : (1)
+    dq3.append(2);  // dq3 : (1, 2)
+    foreach(v : dq3) { ret[1] += v; }  // 3 = 1 + 2
+  
+    // 3와 4을 오른쪽에 추가
+    dq3.append(3);  // dq3 : (1, 2, 3)
+    dq3.append(4);  // dq3 : (2, 3, 4)
+    foreach(v : dq3) { ret[2] += v; }  // 9 = 2 + 3 + 4
+    
+    // 5를 오른쪽에 추가
+    dq3.append(5);  // dq3 : (3, 4, 5)
+    foreach(v : dq3) { ret[3] += v; }  // 12 = 3 + 4 + 5
+  
+    // 왼쪽에서 3을 꺼냄 (제거하고 리턴)
+    const three = dq3.popleft();  // dq3 : (4, 5)
+    foreach(v : dq3) { ret[4] += v; }  // 9 = 4 + 5
+  
+    // 6과 7을 오른쪽에 추가
+    dq3.append(6);  // dq3 : (4, 5, 6)
+    dq3.append(7);  // dq3 : (5, 6, 7)
+    foreach(v : dq3) { ret[5] += v; }  // 18 = 5 + 6 + 7
+    ```
+  * 파이썬 `collections.deque(maxlen=크기)`와 동일하게 동작합니다.
+- [epScript] armoha/euddraft#86 : 함수 인자 뒤에 쉼표 허용하도록 수정
+- [epScript] armoha/euddraft#87 : 이진법 숫자 표현 추가 (@Chromowolf 님 건의)
+  * `0b1 == 1`, `0b10 == 2`, `0b11 == 3`
+- `EUDQueue.empty()`가 항상 참인 버그 수정
+- `EUDQueue.popleft()` 없이 `EUDQueue.append(x)`만 사용할 때 컴파일 오류 수정 (HeartKlass님 제보)
+
+## [0.9.7.12] - 2022.10.19
+- eudplib 0.70.18 업데이트
+- 전역 리스트 순회에서 `TypeError: iter() returned non-iterator of type 'list'` 오류 수정 (줸님 제보)
+- `UnitGroup`: `unit.dying` 블럭에서 현재체력도 체크하게 수정 (HP 0 좀비 유닛 방지)
+- `getattr(EPDCUnitMap, attrName)`이 `AttributeError` 내도록 수정
+- `EUDLoopUnit2`: 이름에 `unlimiter`가 들어간 플러그인이 없으면 `0x0C CSprite`로 사망 인식하도록 롤백
+
+## [0.9.7.10] - 2022.10.18
+- eudplib 0.70.12 업데이트
+- `PVariable[변수] -= 값;` 이 EUD미지원 오류내는 버그 수정 (갈대님 제보)
+- `PVariable`에서 `<<=`, `>>=`, `^=` 컴파일 오류 수정
+- `변수 <<= 변수;`가 연산 결과를 변수에 대입하지 않는 버그 수정
+
+## [0.9.7.9] - 2022.10.17
+- `numpy` 추가
+- 파이썬 3.10.8 업데이트
+- eudplib 0.70.9 업데이트
+- [epScript] 아이템 비교/쓰기 버그 수정, epScript에서 최적화하도록 구조 변경 (34464님 제보)
+  * 비교 연산자 우선순위 버그 수정
+  * `>`, `<`, `&=` 버그 수정
+- armoha/euddraft#82 : 연결맵의 `Disabled(PreserveTrigger())` 트리거가 반복 실행되는 버그 수정 (@Chromowolf 님 제보)
+- 연결맵 트리거 일부가 반복 실행되지 않는 버그 수정 (ehwl 님 제보)
+- `var >> 값` 컴파일 오류 수정 (GGrush님 제보)
+- `EUDNot` 버그 수정
+- `*=`, `/=`, `<<=`, `>>=`가 LValue 변수를 RValue로 변경하는 버그 수정
+- armoha/euddraft#65 : `if (액션)` 오류 메시지 개선
+
+## [0.9.7.3] - 2022.10.09
+- `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화
+  * 누락되었던 `EUDVArray` 연산들 추가함
+- `ItemProxy` % 연산자 빠진 것 추가 (34464 님 제보)
+- [epScript] helper.py 오류 수정 (34464 님 제보)
+- `ItemProxy`의 EUDVariable 메소드 관련 오류 수정 (택하이 님 제보)
+- 배열 + switch 문 오류 수정 (34464 님, Cocoa 님 제보)
+
+## [0.9.7.0] - 2022.10.08
+- `EncodeAIScript` 오류 수정 (@joshow 님 기여)
+- 기본 트리거 문서화, 설명 추가 (@zuhanit 님 기여)
+- `EPDCUnitMap.isBlind()` 오류 수정 (wdcqc 님 제보)
+- `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화
+  * `EUDVArray[상수] -= 변수` 랑 `EUDVArray[변수] &= 값` 등은 아직 작업 필요
+- `EUDLoopPlayer(플레이어타입, 포스, 종족)` 오류 메시지 개선
+- eudplib 0.70.0 업데이트
+
 ## [0.9.6.1] - 2022.07.03
 - epScript 업데이트
 - `PVariable` cast 버그, 인자 타입 버그 수정함
@@ -1474,7 +1607,7 @@ StringBuffer.Display();
 
 ## [0.8.4.7] - 2019.03.26
 
-### 버그수정
+### 버그 수정
 
 - `Disabled(컨디션/액션)`이 컴파일 오류나는 버그 수정.
 - StringBuffer를 선언한 이후에 스트링을 추가하면, StringBuffer 주소가 4의 배수를 벗어나는 버그 수정.
@@ -1483,7 +1616,7 @@ StringBuffer.Display();
 
 ## [0.8.4.6] - 2019.03.24
 
-### 버그수정
+### 버그 수정
 
 - (트리거왕님 기여) `f_wwrite_epd(epd, subp, word)` 버그 수정:
     - subp가 상수일 때 f_bwrite_epd처럼 작동하는 버그. 12월 27일에 추가된 내용인데 이제 발견됐네요 ㅠㅠ
@@ -1496,7 +1629,7 @@ StringBuffer.Display();
 
 ## [0.8.4.5] - 2019.03.24
 
-### 버그수정
+### 버그 수정
 
 - `TextFX_Remove` 버그 수정.
 - 같은 크기의 StringBuffer가 같은 스트링을 가리키는 버그 수정.

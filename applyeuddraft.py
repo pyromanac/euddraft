@@ -29,11 +29,16 @@ import sys
 import traceback
 
 import eudplib as ep
+import scbank_core
+from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 
 import freezeMpq
 import msgbox
+<<<<<<< HEAD
 #import scbank_core
 from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
+=======
+>>>>>>> upstream/master
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
 from pluginLoader import (
     isFreezeIssued,
@@ -125,6 +130,9 @@ def isEpExc(s):
 
 
 def applyEUDDraft(sfname):
+    from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
+    from eudplib.eudlib.objpool import SetGlobalPoolFieldN
+
     try:
         config = readconfig(sfname)
         mainSection = config["main"]
@@ -133,35 +141,31 @@ def applyEUDDraft(sfname):
         if ifname == ofname:
             raise RuntimeError("input and output file should be different.")
 
-        try:
-            if mainSection["debug"]:
-                ep.EPS_SetDebug(True)
-        except KeyError:
-            pass
-        try:
+        mainOptions = ("shufflePayload", "debug", "decodeUnitName", "objFieldN", "sectorSize")
+        for mainOption in mainSection:
+            if mainOption not in mainOptions:
+                raise RuntimeError(f"Invalid option in [main]: {mainOption}")
+
+        if "shufflePayload" in mainSection:
+            ep.ShufflePayload(eval(mainSection["shufflePayload"]))
+
+        if "debug" in mainSection:
+            ep.EPS_SetDebug(True)
+
+        if "decodeUnitName" in mainSection:
             unitname_encoding = mainSection["decodeUnitName"]
-            from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
-
             DecodeUnitNameAs(unitname_encoding)
-        except KeyError:
-            pass
-        try:
-            if mainSection["objFieldN"]:
-                from eudplib.eudlib.objpool import SetGlobalPoolFieldN
 
-                field_n = int(mainSection["objFieldN"])
-                SetGlobalPoolFieldN(field_n)
-        except KeyError:
-            pass
+        if "objFieldN" in mainSection:
+            field_n = int(mainSection["objFieldN"])
+            SetGlobalPoolFieldN(field_n)
 
         sectorSize = 15
-        try:
-            if mainSection["sectorSize"]:
+        if "sectorSize" in mainSection:
+            try:
                 sectorSize = int(mainSection["sectorSize"])
-        except KeyError:
-            pass
-        except:
-            sectorSize = None
+            except:
+                sectorSize = None
 
         print("---------- Loading plugins... ----------")
         ep.LoadMap(ifname)
@@ -213,10 +217,7 @@ def applyEUDDraft(sfname):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
             ver = ep.eudplibVersion()
-            plibPath = (
-                'File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8-win32.egg\\eudplib\\'
-                % ver
-            )
+            plibPath = 'File "E:\\WORKON_HOME\\pypoetry\\Cache\\virtualenvs\\euddraft-C5Qh0W77-py3.10\\lib\\site-packages\\eudplib\\'
             exc.replace(plibPath, 'eudplib File"')
             formatted_excs.append(exc)
 

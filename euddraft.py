@@ -36,6 +36,8 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
+version = "0.9.8.3"
+
 
 def applylib():
     if getattr(sys, "frozen", False):
@@ -98,9 +100,6 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.9.6.1"
-
-
 if __name__ == "__main__" or __name__ == "euddraft__main__":
     mp.freeze_support()
     autoupdate.issueAutoUpdate()
@@ -155,9 +154,7 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
                 # Wait for changes
                 while lasttime and not isModifiedFiles():
                     if msgbox.isWindows:
-                        if msgbox.IsThisForeground() and msgbox.GetAsyncKeyState(
-                            ord("R")
-                        ):
+                        if msgbox.IsThisForeground() and msgbox.GetAsyncKeyState(ord("R")):
                             print("[Forced recompile issued]")
                             break
                     time.sleep(1)
@@ -198,10 +195,11 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
     # Freeze protection
     elif sfname[-4:].lower() == ".scx":
         print(" - Freeze protector mode.")
+        import subprocess
+
         import applyeuddraft
         import freezeMpq
         import pluginLoader
-        import subprocess
 
         pluginLoader.freeze_enabled = True
 
